@@ -1,3 +1,5 @@
+# Imports
+
 import time
 import sys
 import select
@@ -16,7 +18,7 @@ error = '' # Error str shown on first line of graph when not empty
 lastErr = '' # Used to prevent logging repeats
 
 logging.basicConfig( # Logging
-    level=logging.DEBUG,
+    level=logging.ERROR,
     format='%(asctime)s:\n %(message)s\n',
     filename='app.log'
 )
@@ -55,7 +57,7 @@ values = { # Value Settings, explained in instructions
 # Keys
 # (Printed Info)
 
-types = {
+types = { # Path, scale, method, method info, description
   'thermal': ['/sys/class/thermal/thermal_zone0/temp',
               1000,
               0,
@@ -93,49 +95,49 @@ types = {
              'KB written on disk (sectors (512 Bytes) * 2 )']
 }
 
-colorKey = ['red', 'green', 'yellow', 'blue', 'magenta', 'cyan']
+colorKey = ['red', 'green', 'yellow', 'blue', 'magenta', 'cyan'] # starts at 31 (red)
 
 # Functions
 
 def strToFloat(string): # Converts string to float, returns 0 if no number, ignores non-numeric characters
   
-  numStr = ''
+  numStr = '' # Init refined string
   
-  for i in range(len(string)):
+  for i in range(len(string)): # Only add numeric and .'s to numStr
     
     if string[i].isnumeric(): numStr = numStr + string[i]
     if string[i] == '.': numStr = numStr + string[i]
     
   
-  if len(numStr) == 0: return 0
+  if len(numStr) == 0: return 0 # if no numerics, return 0
   
-  if string[0] == '-': return -1 * float(numStr)
-  else: return float(numStr)
+  if string[0] == '-': return -1 * float(numStr) # If 1st char is "-", negetive
+  else: return float(numStr) # Return (positive)
   
 
 def lenNum(string, length): # Returns number str to str of length 'length'
   
-  if strToFloat(string) >= 10 ** length:
+  if strToFloat(string) >= 10 ** length: # Should use scientific notation
     
     num = strToFloat(string)
     pwr = 0
     
-    while num >= 10:
+    while num >= 10: # Gets pwr
       pwr += 1
       num = num / 10
     
-    return str(num)[:3] + 'e' + str(pwr)
+    return str(num)[:3] + 'e' + str(pwr) # Return sci. note.
     
   
-  string = string[:length]
+  string = string[:length] # Trim to length
   
-  add = length - len(string)
+  add = length - len(string) # Length to add (if string is too short)
   
   out = string
   
-  for i in range(add): out = out + '0'
+  for i in range(add): out = out + '0' # Add needed length (if too short)
   
-  return out
+  return out # Return
   
 
 def bar(val, minimum, maximum, length, medium, high, char, loColor, medColor, hiColor):
@@ -145,7 +147,7 @@ def bar(val, minimum, maximum, length, medium, high, char, loColor, medColor, hi
   
   val = max(min(val, maximum), minimum)
   
-  length = int(max(length, 0))
+  length = int(max(length, 0)) 
   
   loColor = int(max(min(loColor, 36), 31))
   medColor = int(max(min(medColor, 36), 31))
@@ -153,121 +155,131 @@ def bar(val, minimum, maximum, length, medium, high, char, loColor, medColor, hi
   
   # Variables
   
-  val = val - minimum
+  val = val - minimum # Set min to 0 relative to val
   
-  span = maximum - minimum
+  span = maximum - minimum # Span between min & max
   
-  barLen = round((val / span) * length)
+  barLen = round((val / span) * length) # Height of bar (num chars)
   
   # Output
   
-  out = str(minimum) +  '[\033[' + str(loColor) + 'm'
+  out = str(minimum) +  '[\033[' + str(loColor) + 'm' # Init out
+  #     ^ Min value      ^ Bar bracket  ^ Low color esc char
   
   for i in range(barLen):
     
-    if i / length >= high: out = out + '\033[' + str(hiColor) + 'm'
-    elif i / length >= medium: out = out + '\033[' + str(medColor) + 'm'
+    if i / length >= high: out = out + '\033[' + str(hiColor) + 'm' # High color
+    elif i / length >= medium: out = out + '\033[' + str(medColor) + 'm' # Med color
     
-    out = out + char
+    out = out + char # Add char
     
   
-  for i in range(length - barLen): out = out + ' '
+  for i in range(length - barLen): out = out + ' ' # Empty space/filler
   
-  out = out + '\033[0m]' + str(maximum)
+  out = out + '\033[0m]' + str(maximum) # Max at end
   
   return out
   
 
-def printLog(log, new): # Prints log with new entry
+def printLog(log, new): # Prints log with new entry (rolls graph)
   
   # Roll
   
   log.pop(0)
   
   log.append(new)
-
+  
+  # Error
+  
   global error
   if error != '': log[0] = error
   
   # Print
   
-  for entry in log: print('\033[F', end = '')
+  for entry in log: print('\033[F', end = '') # Clear
   
-  for entry in log: print('\r' + entry, end = '\n')
+  for entry in log: print('\r' + entry, end = '\n') # Print
   
-  return log
+  return log # Return new log
   
 
 def getCont(path, method): # Gets value from file (uses methods)
   
   out = 0
   
-  if int(method) == 0:
+  if int(method) == 0: # 
     
-    with open(path, 'r') as file: cont = file.readlines()
+    with open(path, 'r') as file: cont = file.readlines() # Read file (as array)
     
-    out = strToFloat(cont[int(values['methodInfo'][0])])
+    out = strToFloat(cont[int(values['methodInfo'][0])]) # out = strToFloat of file line
     
   
   elif int(method) == 1:
     
-    with open(path, 'r') as file: cont = file.readlines()
+    with open(path, 'r') as file: cont = file.readlines() # Read file (as array)
     
-    new = strToFloat(cont[int(values['methodInfo'][0])])
+    new = strToFloat(cont[int(values['methodInfo'][0])]) # new = strToFloat of file line
     
-    out = new - strToFloat(values['methodInfo'][1])
-    out = out / values['spf']
+    out = new - strToFloat(values['methodInfo'][1]) # out = new - old
+    out = out / values['spf'] # Divide by seconds per frame (so it is change per second)
     
-    values['methodInfo'][1] = str(new)
+    values['methodInfo'][1] = str(new) # old = new
     
   
   elif int(method) == 2:
     
-    with open(path, 'r') as file: cont = file.readlines()
+    with open(path, 'r') as file: cont = file.readlines() # Read file (as array)
     
-    line = cont[int(values['methodInfo'][0])][:-1].split()
+    line = cont[int(values['methodInfo'][0])][:-1].split() # Break line into array
     
-    newTotal = sum(float(num) for num in line[1:])
+    newTotal = sum(float(num) for num in line[1:]) # Sum line array
     
-    newVal = int(line[int(values['methodInfo'][1])])
+    newVal = int(line[int(values['methodInfo'][1])]) # Get newVal from indexing
     
-    oldTotal = strToFloat(values['methodInfo'][2])
-    oldVal = strToFloat(values['methodInfo'][3])
+    oldTotal = strToFloat(values['methodInfo'][2]) # Get old total
+    oldVal = strToFloat(values['methodInfo'][3]) # Get old val
     
-    total = (newTotal - oldTotal) / values['spf']
-    val = (newVal - oldVal) / values['spf']
+    total = (newTotal - oldTotal) / values['spf'] # Get total rate of change (divided by seconds per frame)
+    val = (newVal - oldVal) / values['spf'] # Get val rate of change (divided by seconds per frame)
     
-    out = (total - val) / total
+    out = (total - val) / total # Invert val and divide by total (fraction)
     
-    values['methodInfo'][2] = str(newTotal)
-    values['methodInfo'][3] = str(newVal)
+    values['methodInfo'][2] = str(newTotal) # Set old total
+    values['methodInfo'][3] = str(newVal) # Set old val
     
   
   elif int(method) == 3:
     
-    with open(path, 'r') as file: cont = file.readlines()
+    with open(path, 'r') as file: cont = file.readlines() # Read file (as array)
     
-    line = cont[int(values['methodInfo'][0])][:-1].split()
+    line = cont[int(values['methodInfo'][0])][:-1].split() # Break line into array
     
-    newVal = int(line[int(values['methodInfo'][1])])
-    oldVal = strToFloat(values['methodInfo'][2])
+    newVal = int(line[int(values['methodInfo'][1])]) # Get newVal from indexing
+    oldVal = strToFloat(values['methodInfo'][2]) # Get old val
     
-    val = (newVal - oldVal) / values['spf']
+    val = (newVal - oldVal) / values['spf'] # Divide by seconds per frame (so it is change per second)
     
     out = val
     
-    values['methodInfo'][2] = str(newVal)
+    values['methodInfo'][2] = str(newVal) # old = new
     
   
-  return out / values['scale']
+  return out / values['scale'] # Return divided by scale
   
 def detectKey(): # Detects key press (used for exiting graph loop)
   
   if sys.stdin in select.select([sys.stdin], [], [], 0)[0]:
-    key = sys.stdin.read(1)
-    return key
+    key = sys.stdin.read(1) # Read input log
+    return key # Return
   
-  return None
+  return None # Base
+  
+
+def getTypes():
+  
+  global types
+  
+  
   
 
 # Instructions
@@ -313,9 +325,9 @@ instructions = [
   '  "c?": Print color key'
 ]
 
-for entry in instructions: print(entry)
+for entry in instructions: print(entry) # Print Instructions
 
-# Try File
+# Try Opening Sys File
 
 try:
   with open(values['path'], 'r') as file: pass
@@ -335,7 +347,7 @@ while run:
     inp = input('Input: ')
     print()
     
-    inp = inp.lower()
+    inp = inp.lower() # Set to lower
     
     # Quit and Run
     
@@ -355,31 +367,33 @@ while run:
     
     elif inp == 'import':
       
-      valInp = input('Path: ')
+      valInp = input('Path: ') # Prompt path
       print()
       
+      # Try to open
+      
       try:
-        with open(valInp, 'r') as file: cont = file.readlines()
+        with open(valInp, 'r') as file: cont = file.readlines() # Read as array
       except:
-        print('Unable to Open :/')
+        print('Unable to Open :/') # Error
       
       else:
         
         for line in cont:
           
-          line = line.replace('\n', '') + ':  '
+          line = line.replace('\n', '') + ':  ' # Format (remove '\n' and add ': ')
           
-          pair = line.split(': ')
+          pair = line.split(': ') # Split (to array) on ': '
           
-          key = pair[0].lower()
-          val = pair[1]
+          key = pair[0].lower() # Get key
+          val = pair[1] # Get val
           
-          match = False
+          match = False # Match base case
           
           for vKey in values:
-            if vKey.lower() == key: match = True
+            if vKey.lower() == key: match = True # If key is valid (match)
           
-          if match:
+          if match: # If valid
             
             # String
             
@@ -455,18 +469,20 @@ while run:
     
     elif inp == 'type':
       
-      valInp = input('"type": ')
+      valInp = input('"type": ') # Prompt type
       print()
       
       for key in types:
         
         if valInp == key:
           
+          # Try to open file
+          
           try:
             with open(types[key][0], 'r') as file: pass
           except:
             print('Unable to Open :/')
-            runGraph = False
+            runGraph = False # Error
           else:
             values['path'] = types[key][0]
             print('"path" set to "' + values['path'] + '"')
@@ -493,11 +509,13 @@ while run:
       valInp = input('"log": ')
       print()
       
+      # Try to open file
+      
       try:
         with open(valInp, 'r') as file: pass
       except:
         print('Unable to Open :/')
-        runGraph = False
+        runGraph = False # Error
       else:
         values['log'] = valInp
         print('"log" set to "' + values['log'] + '"')
@@ -509,6 +527,8 @@ while run:
       valInp = input('"path": ')
       print()
       
+      # Try to open file
+      
       try:
         with open(valInp, 'r') as file: pass
       except:
@@ -517,7 +537,7 @@ while run:
       else:
         values['path'] = valInp
         print('"path" set to "' + values['path'] + '"')
-        runGraph = True
+        runGraph = True # Error
       
     
     elif inp == 'barchr':
@@ -540,7 +560,7 @@ while run:
       print('"methodInfo" set to "' + str(values['methodInfo']) + '"')
       
     
-    # All Other
+    # All Other (floats)
     
     else:
       
@@ -563,23 +583,23 @@ while run:
   
   if runGraph:
     
-    contLog = [''] * int(max(values['logLen'], 1))
+    contLog = [''] * int(max(values['logLen'], 1)) # Clear log
     
-    print('Enter "q" to return to Input (wait until loop has ended)')
+    print('Enter "q" to return to Input (wait until loop has ended)') # Instructions
     
-    for entry in contLog: print('')
+    for entry in contLog: print('') # First log print
     
   
   # Graph Loop
   
   while runGraph:
     
-    # Key
+    # Key (quit)
     
     if detectKey() == 'q':
       break
     
-    # Read
+    # Read sys file
     
     try:
       cont = getCont(values['path'], values['method'])
@@ -587,19 +607,21 @@ while run:
       if e != lastErr: logging.exception(e)
       lastErr = e
       cont = 0
-      error = 'Error Getting Content'
+      error = 'Error Getting Content' # Error
     
     # Log
     
     shouldLog = False
     
-    if values['logInc'] == 1.0:
+    if values['logInc'] == 1.0: # Log inclusive range
       if cont >= values['logMin'] and cont <= values['logMax']: shouldLog = True
-    else:
+    else: # Log exlusive range
       if cont <= values['logMin']: shouldLog = True
       if cont >= values['logMax']: shouldLog = True
     
-    if shouldLog and values['doLog'] == 1.0:
+    if shouldLog and values['doLog'] == 1.0: # Should log
+      
+      # Try to write to file
       
       try:
         with open(values['log'], 'a') as file:
@@ -608,12 +630,12 @@ while run:
       except Exception as e:
         if e != lastErr: logging.exception(e)
         lastErr = e
-        error = 'Error Writing to Log'
+        error = 'Error Writing to Log' # Error
       
     
     # Print
     
-    newLog = bar(cont, 
+    newLog = bar(cont,
                  values['barMin'],
                  values['barMax'],
                  values['barLen'],
@@ -622,13 +644,13 @@ while run:
                  values['barChr'],
                  values['barLoC'],
                  values['barMedC'],
-                 values['barHiC'])
+                 values['barHiC']) # Bar
     
     newLog = (newLog + ' | ' +
               lenNum(str(cont), int(max(values['numLen'], 0))) +
-              '  ')
+              '  ') # Add number to end
     
-    contLog = printLog(contLog, newLog)
+    contLog = printLog(contLog, newLog) # Roll
     
     # Time
     

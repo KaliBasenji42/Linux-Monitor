@@ -1,6 +1,6 @@
 # Basics
 
-This is python script that reads `/sys` and `/proc` (or similar). It is made for Raspberry Pi OS, but should work similarly on other Linux OS's. It takes the values from the files and graphs them overtime. There are different graph and system variables that can be edited, it is explained when ran. These variables are stored in the `values` dictionary for easy access.
+This is python script that reads `/sys` and `/proc` (or similar). It is made for Linux kernals. It takes the values from the files and graphs them overtime. It it also can log values if a threshold is met. There are different graph and system variables that can be edited, it is explained when ran. These variables are stored in the `values` dictionary for easy access.
 
 [Somewhat usefull Linux documentation](https://www.kernel.org/doc/Documentation/ABI/testing/)
 
@@ -64,8 +64,9 @@ EX:
 
 <pre style="overflow-x: scroll;">
   barChr: |
-  bArmIn: 0.9haksd [Taken as "barMin: 0.9"]
+  bArmIn: 0.9haksd
 </pre>
+BarMin is taken as "0.9"
 
 ## Log ("log.txt" by default)
 
