@@ -57,43 +57,8 @@ values = { # Value Settings, explained in instructions
 # Keys
 # (Printed Info)
 
-types = { # Path, scale, method, method info, description
-  'thermal': ['/sys/class/thermal/thermal_zone0/temp',
-              1000,
-              0,
-              ['0'],
-              'Core temp in Celcius'],
-  'memfr': ['/proc/meminfo',
-              1024,
-              0,
-              ['1'],
-              'Free memory in MB'],
-  'netrx': ['/sys/class/net/eth0/statistics/rx_bytes',
-             1,
-             1,
-             ['0', ''],
-             'Bytes received. "eth0" can be interchanged for different network device'],
-  'nettx': ['/sys/class/net/eth0/statistics/tx_bytes',
-             1,
-             1,
-             ['0', ''],
-             'Bytes transmitted. "eth0" can be interchanged for different network device'],
-  'cpuload': ['/proc/stat',
-             0.01,
-             2,
-             ['1', '4', '', ''],
-             'Total CPU load as %, methodInfo[0] can be changed to change core'],
-  'diskr': ['/proc/diskstats',
-             2,
-             3,
-             ['24', '5', ''],
-             'KB read on disk (sectors (512 Bytes) * 2 )'],
-  'diskw': ['/proc/diskstats',
-             2,
-             3,
-             ['24', '9', ''],
-             'KB written on disk (sectors (512 Bytes) * 2 )']
-}
+types = {}
+# Disctionary for easily setting path, scale, method, & methodInfo with description
 
 colorKey = ['red', 'green', 'yellow', 'blue', 'magenta', 'cyan'] # starts at 31 (red)
 
@@ -275,11 +240,62 @@ def detectKey(): # Detects key press (used for exiting graph loop)
   return None # Base
   
 
-def getTypes():
+def getTypes(typesPath): # Reads 
   
   global types
   
+  # Try to open file
   
+  try:
+    with open(typesPath, 'r') as file:
+      cont = file.readlines()
+  except:
+    return 'err'
+  
+  # Remove \n (To provent errors)
+  
+  newCont = []
+  
+  for line in cont:
+    newCont.append(line.replace('\n', ''))
+  
+  cont = newCont
+  
+  # Clear types
+  
+  types = {}
+  
+  # "fart" - Justin
+  
+  # Loop
+  
+  try:
+    
+    for i in range(len(cont)):
+      
+      line = cont[i] # Current line
+      
+      if line[0] != '#': continue # Skip if not title
+      
+      # Extract variables
+      
+      key = line[1:]
+      path = cont[i+1]
+      scale = strToFloat(cont[i+2])
+      method = int(strToFloat(cont[i+3]))
+      methodInfo = cont[i+4].split()
+      description = cont[i+5]
+      
+      # Set types
+      
+      types[key] = [path, scale, method, methodInfo, description]
+      
+    
+  except Exception as e: # If something in loop fails
+    logging.exception(e) # Log
+    return 'err'
+  
+  return
   
 
 # Instructions
@@ -300,13 +316,14 @@ instructions = [
   '  "?": Reprint this',
   '',
   '  "import": Import settings from file (.txt) (Will ask for file name)',
+  '  "impT": Import from file (.txt) (Will ask for file name)',
   '  "doLog": Log or not, 1 = True, else False, Default: 0 (False)',
   '  "log": Set path of log file, Default: "log.txt"',
   '  "logMax": Lower value of logging range (inclusive), Default: 90',
   '  "logMin": Upper value of logging range (inclusive), Default: 0',
   '  "logInc": Is inclusive of range (if not, exclusive), 1 = True, else False, Default: 0 (False)',
   '',
-  '  "path": File path for data file, Defualt: (for thermal)',
+  '  "path": File path for data file, Default: (for thermal)',
   '  "scale": Scale of return value, Default: 1000',
   '  "method": Method for gathering info, Default: 0',
   '  "methodInfo": Other info needed for gathering data, Default: ["0"]',
@@ -327,13 +344,17 @@ instructions = [
 
 for entry in instructions: print(entry) # Print Instructions
 
-# Try Opening Sys File
+# Try Opening Files
 
 try:
   with open(values['path'], 'r') as file: pass
 except:
-  print('\nUnable to Open file :/')
+  print('\nUnable to open cont file :/')
   runGraph = False
+
+# Import Types
+
+if getTypes('types.txt') == 'err': print('\nUnable to open types file :/')
 
 # Main Loop
 
@@ -364,6 +385,15 @@ while run:
       
     
     # import
+    
+    elif inp == 'impt':
+      
+      valInp = input('Path: ') # Prompt path
+      print()
+      
+      if getTypes(valInp) == 'err': print('Unable to open types file :/')
+      else: print('Imported types')
+      
     
     elif inp == 'import':
       

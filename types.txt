@@ -1,0 +1,42 @@
+#thermal
+/sys/class/thermal/thermal_zone0/temp
+1000
+0
+0
+Core temp in Celcius
+#memfr
+/proc/meminfo
+1024
+0
+1
+Free memory in MB
+#netrx
+/sys/class/net/eth0/statistics/rx_bytes
+1
+1
+0 0
+Bytes received. "eth0" can be interchanged for different network device
+#nettx
+/sys/class/net/eth0/statistics/tx_bytes
+1
+1
+0 0
+Bytes transmitted. "eth0" can be interchanged for different network device
+#cpuload
+/proc/stat
+0.01
+2
+1 4 0 0
+Total CPU load as %, methodInfo[0] can be changed to change core
+#diskr
+/proc/diskstats
+2
+3
+24 5 0
+KB read on disk (sectors (512 Bytes) * 2 )
+#diskw
+/proc/diskstats
+2
+3
+24 9 0
+KB written on disk (sectors (512 Bytes) * 2 )

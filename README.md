@@ -13,43 +13,43 @@ This is python script that reads `/sys` and `/proc` (or similar). It is made for
 ## __main__.py
 
 <pre style="overflow-x: scroll;">
-  Import
+Import
+
+Vars
+
+Functions
+
+Pre-Loop (File and Printing Stuff)
+
+Main Loop {
   
-  Vars
-  
-  Functions
-  
-  Pre-Loop (File and Printing Stuff)
-  
-  Main Loop {
+  Input Loop {
     
-    Input Loop {
-      
-      Many elifs in series
-      
-      Else/Base case (floats in 'values' dictionary)
-      
-      Break to exit
-      
-    }
+    Many elifs in series
     
-    Pre-Graphing
+    Else/Base case (floats in 'values' dictionary)
     
-    Graphing Loop {
-      
-      Break to exit
-      
-      Get Value
-      
-      Log Logic
-      
-      Print/Render
-      
-      Timing/FPS
-      
-    }
+    Break to exit
     
   }
+  
+  Pre-Graphing
+  
+  Graphing Loop {
+    
+    Break to exit
+    
+    Get Value
+    
+    Log Logic
+    
+    Print/Render
+    
+    Timing/FPS
+    
+  }
+  
+}
 </pre>
 
 ## Settings ("settings.txt" by default)
@@ -57,28 +57,50 @@ This is python script that reads `/sys` and `/proc` (or similar). It is made for
 Formated like how you change the values in the program, with ": " seperating key and value. And each line being a new key-value pair.
 
 <pre style="overflow-x: scroll;">
-  [Key]: [Val]
+[Key]: [Val]
 </pre>
 
 EX:
 
 <pre style="overflow-x: scroll;">
-  barChr: |
-  bArmIn: 0.9haksd
+barChr: |
+bArmIn: 0.9haksd
 </pre>
 BarMin is taken as "0.9"
 
 ## Log ("log.txt" by default)
 
 <pre style="overflow-x: scroll;">
-  YYYY-MM-DD HH:MM:SS in "Path": ###
+YYYY-MM-DD HH:MM:SS in "Path": ###
 </pre>
 
 EX:
 
 <pre style="overflow-x: scroll;">
-   2025-03-25 3:34:51 in "/sys/class/thermal/thermal_zone0/temp": 95.32
-   2025-03-25 18:35:06 in "/sys/class/thermal/thermal_zone0/temp": -1.0
+2025-03-25 3:34:51 in "/sys/class/thermal/thermal_zone0/temp": 95.32
+2025-03-25 18:35:06 in "/sys/class/thermal/thermal_zone0/temp": -1.0
+</pre>
+
+## Types ("types.txt" by default)
+
+<pre style="overflow-x: scroll;">
+#name
+{scale} #
+{method} #
+{method info} str1 str2 ...
+Description
+name2:
+...
+</pre>
+
+EX:
+
+<pre style="overflow-x: scroll;">
+#thermal
+1000
+0
+0
+Core temp in Celcius
 </pre>
 
 # Printed Documentation
@@ -101,25 +123,26 @@ Inputs:
   "?": Reprint this
 
   "import": Import settings from file (.txt) (Will ask for file name)
+  "impT": Import from file (.txt) (Will ask for file name)
   "doLog": Log or not, 1 = True, else False, Default: 0 (False)
   "log": Set path of log file, Default: "log.txt"
   "logMax": Lower value of logging range (inclusive), Default: 90
   "logMin": Upper value of logging range (inclusive), Default: 0
   "logInc": Is inclusive of range (if not, exclusive), 1 = True, else False, Default: 0 (False)
 
-  "path": File path for data file, Defualt: (for thermal)
+  "path": File path for data file, Default: (for thermal)
   "scale": Scale of return value, Default: 1000
   "method": Method for gathering info, Default: 0
   "methodInfo": Other info needed for gathering data, Default: ["0"]
   "type": Looks up paths saved in list for data file
   "type?": Print types in array noted above
 
-  "barMin": Default: 20 
+  "barMin": Default: 20
   "barMax": Default: 100
   "barLen": number of chars in bar, Default: 50
   "barMed": Medium Threshold (0 to 1), Default: 0.7
   "barHi": High Threshold (0 to 1), Default: 0.85
-  "barChr": Character used in bar, Default: "="
+  "barChr": Character used in bar, Default: "|"
   "barLoC": Low color, Default: 32 (green)
   "barMedC": Medium color, Default: 33 (yellow)
   "barHiC": High color, Default: 31 (red)
@@ -139,7 +162,7 @@ cyan: 36
 
 [Useful resource for terminal styling](https://stackoverflow.com/questions/4842424/list-of-ansi-color-escape-sequences)
 
-## Types Array
+## Types Array (Default)
 
 <pre style="overflow-x: scroll;">
 thermal: /sys/class/thermal/thermal_zone0/temp, scale: 1000, method: 0, methodInfo: ['0']
